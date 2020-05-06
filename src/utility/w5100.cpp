@@ -304,7 +304,9 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 			cmd[1] = addr >> 8;
 			cmd[2] = addr & 0xFF;
 			cmd[3] = buf[i];
+			if (ss_pin == 10) noInterrupts();
 			SPI.transfer(cmd, 4);
+			if (ss_pin == 10) interrupts();
 			addr++;
 #else /* !ARDUINO_ARCH_SPRESENSE */
 			SPI.transfer(0xF0);
@@ -326,7 +328,9 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 		if (txbuf) {
 			memcpy(txbuf, cmd, 4);
 			memcpy(txbuf + 4, buf, len);
+			if (ss_pin == 10) noInterrupts();
 			SPI.transfer(txbuf, 4 + len);
+			if (ss_pin == 10) interrupts();
 			free(txbuf);
 		}
 #else /* !ARDUINO_ARCH_SPRESENSE */
@@ -385,14 +389,18 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 			for (uint8_t i=0; i < len; i++) {
 				cmd[i + 3] = buf[i];
 			}
+			if (ss_pin == 10) noInterrupts();
 			SPI.transfer(cmd, len + 3);
+			if (ss_pin == 10) interrupts();
 		} else {
 #ifdef ARDUINO_ARCH_SPRESENSE
 			uint8_t *txbuf = (uint8_t*)malloc(3 + len);
 			if (txbuf) {
 				memcpy(txbuf, cmd, 3);
 				memcpy(txbuf + 3, buf, len);
+				if (ss_pin == 10) noInterrupts();
 				SPI.transfer(txbuf, 3 + len);
+				if (ss_pin == 10) interrupts();
 				free(txbuf);
 			}
 #else /* !ARDUINO_ARCH_SPRESENSE */
@@ -425,7 +433,9 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			cmd[2] = addr & 0xFF;
 			addr++;
 			cmd[3] = 0;
+			if (ss_pin == 10) noInterrupts();
 			SPI.transfer(cmd, 4);
+			if (ss_pin == 10) interrupts();
 			buf[i] = cmd[3];
 #else /* !ARDUINO_ARCH_SPRESENSE */
 			#if 1
@@ -457,7 +467,9 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		if (rxbuf) {
 			memcpy(rxbuf, cmd, 4);
 			memset(rxbuf + 4, 0, len);
+			if (ss_pin == 10) noInterrupts();
 			SPI.transfer(rxbuf, 4 + len);
+			if (ss_pin == 10) interrupts();
 			memcpy(buf, rxbuf + 4, len);
 			free(rxbuf);
 		}
@@ -512,7 +524,9 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		if (rxbuf) {
 			memcpy(rxbuf, cmd, 3);
 			memset(rxbuf + 3, 0, len);
+			if (ss_pin == 10) noInterrupts();
 			SPI.transfer(rxbuf, 3 + len);
+			if (ss_pin == 10) interrupts();
 			memcpy(buf, rxbuf + 3, len);
 			free(rxbuf);
 		}
