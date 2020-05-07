@@ -94,7 +94,11 @@ void loop() {
           client.println("<html>");
           // output the value of each analog input pin
           for (int analogChannel = 0; analogChannel < 6; analogChannel++) {
+#ifdef ARDUINO_ARCH_SPRESENSE
+            int sensorReading = analogRead(A0 + analogChannel);
+#else /* !ARDUINO_ARCH_SPRESENSE */
             int sensorReading = analogRead(analogChannel);
+#endif /* ARDUINO_ARCH_SPRESENSE */
             client.print("analog input ");
             client.print(analogChannel);
             client.print(" is ");
