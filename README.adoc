@@ -1,3 +1,15 @@
+= Ethernet Library for Ethernet Addon for Spresense =
+
+Target board
+https://crane-elec.co.jp/products/vol-20/
+
+image::https://crane-elec.co.jp/wp/wp-content/uploads/2021/02/W5500_Eth_snapshot-768x576.jpg[Ethernet Addon for Spresense, link=https://crane-elec.co.jp/products/vol-20/]
+
+-------------------------------------------
+Fork from https://github.com/baggio63446333/Ethernet
+
+
+-------------------------------------------
 = Ethernet Library for Arduino =
 
 With the Arduino Ethernet Shield, this library allows an Arduino board to connect to the internet.

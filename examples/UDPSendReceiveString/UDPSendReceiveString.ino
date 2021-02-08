@@ -41,11 +41,18 @@ void setup() {
   //Ethernet.init(15);  // ESP8266 with Adafruit Featherwing Ethernet
   //Ethernet.init(33);  // ESP32 with Adafruit Featherwing Ethernet
 
+  /* Release reset */
+  pinMode(21, OUTPUT);
+  digitalWrite(21,HIGH);
+
+  /* Ethernet Addon board for Spresense */
+  Ethernet.init(19);
+
   // start the Ethernet
   Ethernet.begin(mac, ip);
 
   // Open serial communications and wait for port to open:
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }

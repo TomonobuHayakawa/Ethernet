@@ -46,8 +46,8 @@
 #define SS_PIN_DEFAULT  10
 #endif
 
-
-
+#define SPI_PORT SPI5
+//#define SPI_PORT SPI
 
 // W5100 controller instance
 uint8_t  W5100Class::chip = 0;
@@ -101,10 +101,10 @@ uint8_t W5100Class::init(void)
 	delay(560);
 	//Serial.println("w5100 init");
 
-	SPI.begin();
+	SPI_PORT.begin();
 	initSS();
 	resetSS();
-	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+	SPI_PORT.beginTransaction(SPI_ETHERNET_SETTINGS);
 
 	// Attempt W5200 detection first, because W5200 does not properly
 	// reset its SPI state when CS goes high (inactive).  Communication
@@ -189,10 +189,10 @@ uint8_t W5100Class::init(void)
 	} else {
 		//Serial.println("no chip :-(");
 		chip = 0;
-		SPI.endTransaction();
+		SPI_PORT.endTransaction();
 		return 0; // no known chip is responding :-(
 	}
-	SPI.endTransaction();
+	SPI_PORT.endTransaction();
 	initialized = true;
 	return 1; // successful init
 }
@@ -276,15 +276,15 @@ W5100Linkstatus W5100Class::getLinkStatus()
 	if (!init()) return UNKNOWN;
 	switch (chip) {
 	  case 52:
-		SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+		SPI_PORT.beginTransaction(SPI_ETHERNET_SETTINGS);
 		phystatus = readPSTATUS_W5200();
-		SPI.endTransaction();
+		SPI_PORT.endTransaction();
 		if (phystatus & 0x20) return LINK_ON;
 		return LINK_OFF;
 	  case 55:
-		SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+		SPI_PORT.beginTransaction(SPI_ETHERNET_SETTINGS);
 		phystatus = readPHYCFGR_W5500();
-		SPI.endTransaction();
+		SPI_PORT.endTransaction();
 		if (phystatus & 0x01) return LINK_ON;
 		return LINK_OFF;
 	  default:
@@ -305,15 +305,15 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 			cmd[2] = addr & 0xFF;
 			cmd[3] = buf[i];
 			if (ss_pin == 10) noInterrupts();
-			SPI.transfer(cmd, 4);
+			SPI_PORT.transfer(cmd, 4);
 			if (ss_pin == 10) interrupts();
 			addr++;
 #else /* !ARDUINO_ARCH_SPRESENSE */
-			SPI.transfer(0xF0);
-			SPI.transfer(addr >> 8);
-			SPI.transfer(addr & 0xFF);
+			SPI_PORT.transfer(0xF0);
+			SPI_PORT.transfer(addr >> 8);
+			SPI_PORT.transfer(addr & 0xFF);
 			addr++;
-			SPI.transfer(buf[i]);
+			SPI_PORT.transfer(buf[i]);
 #endif /* ARDUINO_ARCH_SPRESENSE */
 			resetSS();
 		}
@@ -329,18 +329,18 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 			memcpy(txbuf, cmd, 4);
 			memcpy(txbuf + 4, buf, len);
 			if (ss_pin == 10) noInterrupts();
-			SPI.transfer(txbuf, 4 + len);
+			SPI_PORT.transfer(txbuf, 4 + len);
 			if (ss_pin == 10) interrupts();
 			free(txbuf);
 		}
 #else /* !ARDUINO_ARCH_SPRESENSE */
-		SPI.transfer(cmd, 4);
+		SPI_PORT.transfer(cmd, 4);
 #ifdef SPI_HAS_TRANSFER_BUF
-		SPI.transfer(buf, NULL, len);
+		SPI_PORT.transfer(buf, NULL, len);
 #else
 		// TODO: copy 8 bytes at a time to cmd[] and block transfer
 		for (uint16_t i=0; i < len; i++) {
-			SPI.transfer(buf[i]);
+			SPI_PORT.transfer(buf[i]);
 		}
 #endif
 #endif /* ARDUINO_ARCH_SPRESENSE */
@@ -390,7 +390,7 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 				cmd[i + 3] = buf[i];
 			}
 			if (ss_pin == 10) noInterrupts();
-			SPI.transfer(cmd, len + 3);
+			SPI_PORT.transfer(cmd, len + 3);
 			if (ss_pin == 10) interrupts();
 		} else {
 #ifdef ARDUINO_ARCH_SPRESENSE
@@ -399,18 +399,18 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 				memcpy(txbuf, cmd, 3);
 				memcpy(txbuf + 3, buf, len);
 				if (ss_pin == 10) noInterrupts();
-				SPI.transfer(txbuf, 3 + len);
+				SPI_PORT.transfer(txbuf, 3 + len);
 				if (ss_pin == 10) interrupts();
 				free(txbuf);
 			}
 #else /* !ARDUINO_ARCH_SPRESENSE */
-			SPI.transfer(cmd, 3);
+			SPI_PORT.transfer(cmd, 3);
 #ifdef SPI_HAS_TRANSFER_BUF
-			SPI.transfer(buf, NULL, len);
+			SPI_PORT.transfer(buf, NULL, len);
 #else
 			// TODO: copy 8 bytes at a time to cmd[] and block transfer
 			for (uint16_t i=0; i < len; i++) {
-				SPI.transfer(buf[i]);
+				SPI_PORT.transfer(buf[i]);
 			}
 #endif
 #endif /* ARDUINO_ARCH_SPRESENSE */
@@ -434,22 +434,22 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			addr++;
 			cmd[3] = 0;
 			if (ss_pin == 10) noInterrupts();
-			SPI.transfer(cmd, 4);
+			SPI_PORT.transfer(cmd, 4);
 			if (ss_pin == 10) interrupts();
 			buf[i] = cmd[3];
 #else /* !ARDUINO_ARCH_SPRESENSE */
 			#if 1
-			SPI.transfer(0x0F);
-			SPI.transfer(addr >> 8);
-			SPI.transfer(addr & 0xFF);
+			SPI_PORT.transfer(0x0F);
+			SPI_PORT.transfer(addr >> 8);
+			SPI_PORT.transfer(addr & 0xFF);
 			addr++;
-			buf[i] = SPI.transfer(0);
+			buf[i] = SPI_PORT.transfer(0);
 			#else
 			cmd[0] = 0x0F;
 			cmd[1] = addr >> 8;
 			cmd[2] = addr & 0xFF;
 			cmd[3] = 0;
-			SPI.transfer(cmd, 4); // TODO: why doesn't this work?
+			SPI_PORT.transfer(cmd, 4); // TODO: why doesn't this work?
 			buf[i] = cmd[3];
 			addr++;
 			#endif
@@ -468,15 +468,15 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			memcpy(rxbuf, cmd, 4);
 			memset(rxbuf + 4, 0, len);
 			if (ss_pin == 10) noInterrupts();
-			SPI.transfer(rxbuf, 4 + len);
+			SPI_PORT.transfer(rxbuf, 4 + len);
 			if (ss_pin == 10) interrupts();
 			memcpy(buf, rxbuf + 4, len);
 			free(rxbuf);
 		}
 #else /* !ARDUINO_ARCH_SPRESENSE */
-		SPI.transfer(cmd, 4);
+		SPI_PORT.transfer(cmd, 4);
 		memset(buf, 0, len);
-		SPI.transfer(buf, len);
+		SPI_PORT.transfer(buf, len);
 #endif /* ARDUINO_ARCH_SPRESENSE */
 		resetSS();
 	} else { // chip == 55
@@ -525,15 +525,15 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			memcpy(rxbuf, cmd, 3);
 			memset(rxbuf + 3, 0, len);
 			if (ss_pin == 10) noInterrupts();
-			SPI.transfer(rxbuf, 3 + len);
+			SPI_PORT.transfer(rxbuf, 3 + len);
 			if (ss_pin == 10) interrupts();
 			memcpy(buf, rxbuf + 3, len);
 			free(rxbuf);
 		}
 #else /* !ARDUINO_ARCH_SPRESENSE */
-		SPI.transfer(cmd, 3);
+		SPI_PORT.transfer(cmd, 3);
 		memset(buf, 0, len);
-		SPI.transfer(buf, len);
+		SPI_PORT.transfer(buf, len);
 #endif /* ARDUINO_ARCH_SPRESENSE */
 		resetSS();
 	}

@@ -22,7 +22,14 @@ void setup() {
   //Ethernet.init(15);  // ESP8266 with Adafruit Featherwing Ethernet
   //Ethernet.init(33);  // ESP32 with Adafruit Featherwing Ethernet
 
-  Serial.begin(9600);
+  /* Release reset */
+  pinMode(21, OUTPUT);
+  digitalWrite(21,HIGH);
+
+  /* Ethernet Addon board for Spresense */
+  Ethernet.init(19);
+
+  Serial.begin(115200);
 }
 
 void loop() {
